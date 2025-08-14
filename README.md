@@ -1,69 +1,142 @@
-# React + TypeScript + Vite
+# Rate Limit Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based frontend application built with Vite, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 with TypeScript
+- Vite for fast development and building
+- Tailwind CSS for styling
+- Responsive UI components
+- Docker support for easy deployment
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 18+ 
+- Docker (for containerized deployment)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Local Development
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Using Node.js directly
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Docker Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Production Build
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Build the production image
+docker build -t rate-limit-frontend .
+
+# Run the container
+docker run -p 3000:80 rate-limit-frontend
+
+# The app will be available at http://localhost:3000
+```
+
+### Run in Background
+
+```bash
+# Run in detached mode
+docker run -d -p 3000:80 --name rate-limit-frontend rate-limit-frontend
+
+# Stop the container
+docker stop rate-limit-frontend
+
+# Remove the container
+docker rm rate-limit-frontend
+```
+
+### Development with Docker (Optional)
+
+If you want to run the development server in Docker:
+
+```bash
+# Create a development container with volume mounting
+docker run -it --rm -p 5173:5173 -v $(pwd):/app -w /app node:18-alpine sh
+
+# Inside the container, install dependencies and start dev server
+npm install
+npm run dev -- --host 0.0.0.0
+```
+
+## Environment Variables
+
+- `NODE_ENV`: Set to `production` or `development`
+
+## Health Check
+
+The production container includes a health check endpoint at `/health` that returns a 200 status when the application is running properly.
+
+## Performance Features
+
+- Multi-stage Docker build for optimized image size
+- Nginx with gzip compression
+- Static asset caching
+- Security headers
+- Client-side routing support
+
+## Troubleshooting
+
+### Container won't start
+```bash
+# Check container logs
+docker logs <container_name>
+
+# Check if port 3000 is already in use
+netstat -tulpn | grep :3000
+```
+
+### Port already in use
+```bash
+# Use a different port
+docker run -p 3001:80 rate-limit-frontend
+
+# Or stop the process using port 3000
+sudo lsof -ti:3000 | xargs kill -9
+```
+
+## Building for Different Environments
+
+```bash
+# Production build
+docker build -t rate-limit-frontend:prod .
+
+# Latest build
+docker build -t rate-limit-frontend:latest .
+
+# Custom tag
+docker build -t rate-limit-frontend:v1.0.0 .
+```
+
+## Container Management
+
+```bash
+# List running containers
+docker ps
+
+# List all containers
+docker ps -a
+
+# List images
+docker images
+
+# Remove unused images
+docker image prune
+
+# Remove all stopped containers
+docker container prune
 ```
