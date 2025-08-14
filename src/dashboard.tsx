@@ -51,7 +51,7 @@ export default function Dashboard() {
     setLoadingCars(true);
     setCarsError(null);
     try {
-      const response = await axios.get("https://task-b7pi.onrender.com/cars", {
+      const response = await axios.get("https://task-hvun.onrender.com/cars", {
         headers: { token: storedToken },
       });
       const data = Array.isArray(response.data)
@@ -124,7 +124,7 @@ export default function Dashboard() {
     setCarsError(null);
     try {
       const response = await axios.post(
-        "https://task-b7pi.onrender.com/carColor",
+        "https://task-hvun.onrender.com/carColor",
         { color: searchColor.trim() },
         { headers: { token: storedToken } }
       );
@@ -167,7 +167,7 @@ export default function Dashboard() {
     setCreateSuccess(null);
     try {
       await axios.post(
-        "https://task-b7pi.onrender.com/cars",
+        "https://task-hvun.onrender.com/cars",
         {
           make,
           model,

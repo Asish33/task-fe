@@ -30,7 +30,7 @@ export default function Login() {
     setIsLoading(true);
     setMessage("");
     try {
-      const res = await axios.post("https://task-b7pi.onrender.com/login", {
+      const res = await axios.post("https://task-hvun.onrender.com/login", {
         email,
         password,
       });
