@@ -37,8 +37,17 @@ export default function Login() {
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("email", email);
+
+        const userRole = res.data.role || res.data.user?.role || "user";
+        localStorage.setItem("userRole", userRole);
+
         setMessage("Login successful!");
-        navigate("/dashboard");
+
+        if (userRole === "admin") {
+          navigate("/adminDashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setMessage("Invalid credentials");
       }

@@ -25,10 +25,18 @@ type Car = {
   __v?: number;
 };
 
-export default function Dashboard() {
+export default function AdminDashboard() {
   const [cars, setCars] = useState<Car[] | null>(null);
   const [loadingCars, setLoadingCars] = useState(false);
   const [carsError, setCarsError] = useState<string | null>(null);
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState<string>("");
+  const [color, setColor] = useState("");
+  const [price, setPrice] = useState<string>("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
   const [searchColor, setSearchColor] = useState("");
   const [filteredCars, setFilteredCars] = useState<Car[] | null>(null);
@@ -150,10 +158,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleOpenBookings = () => {
-    window.location.href = "/bookings";
-  };
-
   const handleSearchByColor = () => {
     if (!searchColor.trim()) {
       // If no color is entered, show all cars
@@ -180,12 +184,149 @@ export default function Dashboard() {
     handleSearchByColor();
   }, [searchColor, cars]);
 
+  const handleCreateCar = async () => {
+    const storedToken = localStorage.getItem("token");
+    if (!storedToken) {
+      setCreateError("Missing token. Please log in.");
+      return;
+    }
+
+    if (!make || !model || !year || !color || !price) {
+      setCreateError("Please fill in all fields.");
+      return;
+    }
+
+    const yearNumber = Number(year);
+    const priceNumber = Number(price);
+    if (Number.isNaN(yearNumber) || Number.isNaN(priceNumber)) {
+      setCreateError("Year and Price must be valid numbers.");
+      return;
+    }
+
+    setCreateLoading(true);
+    setCreateError(null);
+    setCreateSuccess(null);
+    try {
+      await axios.post(
+        "https://task-hvun.onrender.com/cars",
+        {
+          make,
+          model,
+          year: yearNumber,
+          color,
+          price: priceNumber,
+        },
+        { headers: { token: storedToken } }
+      );
+      setCreateSuccess("Car created successfully.");
+      setMake("");
+      setModel("");
+      setYear("");
+      setColor("");
+      setPrice("");
+      fetchCars(); // Refresh the cars list after creating a new car
+    } catch (error: any) {
+      setCreateError(error.response?.data?.message || "Failed to create car");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-5xl p-4">
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Admin Dashboard - Create a Car</CardTitle>
+          <CardDescription>
+            Fill in details and submit to add a car to the system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="make">Make</Label>
+              <Input
+                id="make"
+                type="text"
+                placeholder="Mercedes-Benz"
+                value={make}
+                onChange={(e) => setMake(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="model">Model</Label>
+              <Input
+                id="model"
+                type="text"
+                placeholder="C-Class"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="year">Year</Label>
+              <Input
+                id="year"
+                type="number"
+                placeholder="2024"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                min={1886}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="color">Color</Label>
+              <Input
+                id="color"
+                type="text"
+                placeholder="Red"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="price">Price</Label>
+              <Input
+                id="price"
+                type="number"
+                placeholder="55000"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                min={0}
+                step={100}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                type="button"
+                onClick={handleCreateCar}
+                disabled={createLoading}
+              >
+                {createLoading ? "Creating..." : "Create car"}
+              </Button>
+            </div>
+            {(createError || createSuccess) && (
+              <div className="sm:col-span-2">
+                {createError && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    {createError}
+                  </div>
+                )}
+                {createSuccess && (
+                  <div className="mt-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+                    {createSuccess}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle className="text-lg">Cars</CardTitle>
+            <CardTitle className="text-lg">All Cars</CardTitle>
             <CardDescription>
               {Array.isArray(cars)
                 ? `${filteredCars ? filteredCars.length : cars.length} item${
@@ -214,28 +355,6 @@ export default function Dashboard() {
               disabled={loadingCars}
             >
               {loadingCars ? "Refreshing..." : "Refresh"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleOpenBookings}
-              className="relative"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"
-                />
-              </svg>
-              <span className="ml-1">Bookings</span>
             </Button>
           </div>
         </CardHeader>
@@ -400,6 +519,28 @@ export default function Dashboard() {
                 </Label>
                 <p className="text-sm text-gray-600 font-mono">
                   {selectedCar._id}
+                </p>
+              </div>
+            )}
+
+            {selectedCar.userId && (
+              <div className="pt-4 border-t">
+                <Label className="text-sm font-medium text-gray-500">
+                  User ID
+                </Label>
+                <p className="text-sm text-gray-600 font-mono">
+                  {selectedCar.userId}
+                </p>
+              </div>
+            )}
+
+            {selectedCar.createdAt && (
+              <div className="pt-4 border-t">
+                <Label className="text-sm font-medium text-gray-500">
+                  Created At
+                </Label>
+                <p className="text-sm text-gray-600">
+                  {new Date(selectedCar.createdAt).toLocaleString()}
                 </p>
               </div>
             )}
